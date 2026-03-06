@@ -167,10 +167,161 @@
   ::-webkit-scrollbar { width:5px; }
   ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
 
+  /* ========== RESPONSIVE MOBILE ========== */
+
+  /* Tabs for mobile navigation */
+  .mobile-tabs {
+    display: none;
+    background: white;
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+  }
+  .mobile-tabs-inner {
+    display: flex;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+    border-bottom: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .tab-btn.active {
+    color: var(--c1);
+    border-bottom-color: var(--c1);
+    background: #F0F4FF;
+  }
+
+  @media (max-width: 768px) {
+    /* Header */
+    header {
+      padding: 14px 18px;
+      gap: 12px;
+    }
+    header h1 { font-size: 1.15rem; }
+    header p { font-size: .72rem; }
+    header .hicon { width: 36px; height: 36px; font-size: 18px; border-radius: 10px; }
+
+    /* Mobile tabs */
+    .mobile-tabs { display: block; }
+
+    /* App layout: single column */
+    .app {
+      grid-template-columns: 1fr;
+      display: block;
+    }
+
+    /* Panels: hidden/visible via tabs */
+    .form-panel {
+      border-right: none;
+      border-bottom: 2px solid var(--border);
+      padding: 16px 14px 0;
+      display: none;
+    }
+    .form-panel.tab-active { display: block; }
+
+    .preview-panel {
+      padding: 16px 10px 24px;
+      display: none;
+    }
+    .preview-panel.tab-active { display: flex; }
+    .preview-panel > h2 { font-size: .78rem; margin-bottom: 12px; }
+
+    /* Invoice doc on mobile */
+    #invoice-doc {
+      padding: 18px 14px;
+      width: 100%;
+    }
+
+    /* Invoice header: stack vertically */
+    .inv-header {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .inv-title-block {
+      text-align: left;
+    }
+    .inv-title { font-size: 1.4rem; }
+
+    /* Invoice parties: stack vertically */
+    .inv-parties {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    /* Invoice table: compact */
+    .inv-table thead th,
+    .inv-table td {
+      padding: 7px 8px;
+      font-size: .75rem;
+    }
+
+    /* Invoice bottom: stack vertically */
+    .inv-bottom {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .inv-totals { min-width: unset; width: 100%; }
+
+    /* Invoice footer: stack */
+    .inv-footer {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: .68rem;
+    }
+
+    /* Form rows: 1 column on mobile */
+    .row2 { grid-template-columns: 1fr; gap: 0; }
+    .row3 { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .row3 > div:last-child { grid-column: 1 / -1; }
+
+    /* Sticky actions */
+    .form-actions {
+      padding: 10px 0 14px;
+      gap: 8px;
+    }
+    .form-actions .btn { font-size: .82rem; padding: 10px 10px; }
+
+    /* Color row */
+    .color-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    /* Section titles */
+    .section-title { font-size: .85rem; margin: 18px 0 8px; }
+
+    /* Item cards */
+    .item-card { padding: 10px 11px; }
+  }
+
+  @media (max-width: 400px) {
+    header h1 { font-size: 1rem; }
+    header p { display: none; }
+    #invoice-doc { padding: 14px 10px; }
+    .inv-table thead th,
+    .inv-table td { padding: 5px 5px; font-size: .7rem; }
+    .color-row { grid-template-columns: 1fr; }
+    .row3 { grid-template-columns: 1fr 1fr; gap: 5px; }
+  }
+
   @media print {
-    header, .form-panel, .preview-panel > h2 { display:none !important; }
-    .app { grid-template-columns:1fr; }
-    .preview-panel { padding:0; background:white; }
+    header, .form-panel, .preview-panel > h2, .mobile-tabs { display:none !important; }
+    .app { grid-template-columns:1fr; display: block; }
+    .preview-panel { padding:0; background:white; display: flex !important; }
     #invoice-doc { box-shadow:none; max-width:100%; }
     #invoice-doc::before { display:none; }
   }
@@ -186,10 +337,22 @@
   </div>
 </header>
 
+<!-- Mobile tabs navigation -->
+<nav class="mobile-tabs" id="mobile-tabs">
+  <div class="mobile-tabs-inner">
+    <button class="tab-btn active" id="tab-form" onclick="switchTab('form')">
+      ✏️ Formulaire
+    </button>
+    <button class="tab-btn" id="tab-preview" onclick="switchTab('preview')">
+      👁️ Aperçu
+    </button>
+  </div>
+</nav>
+
 <div class="app">
 
   <!-- ====== FORM ====== -->
-  <div class="form-panel">
+  <div class="form-panel tab-active" id="panel-form">
 
     <div class="section-title">🎨 Logo & Identité Visuelle</div>
 
@@ -289,13 +452,13 @@
     <textarea id="f-notes" placeholder="Informations complémentaires..."></textarea>
 
     <div class="form-actions">
-      <button class="btn btn-primary" onclick="genInvoice()">⚡ Générer</button>
+      <button class="btn btn-primary" onclick="genInvoice(); switchTab('preview')">⚡ Générer</button>
       <button class="btn btn-success" onclick="printIt()">🖨️ PDF</button>
     </div>
   </div>
 
   <!-- ====== PREVIEW ====== -->
-  <div class="preview-panel">
+  <div class="preview-panel tab-active" id="panel-preview">
     <h2>Aperçu en temps réel</h2>
     <div id="invoice-doc"></div>
   </div>
@@ -304,7 +467,38 @@
 <canvas id="cvs" style="display:none"></canvas>
 
 <script>
-/* =================== STATE =================== */
+/* =================== MOBILE TABS =================== */
+function switchTab(tab) {
+  const isMobile = window.innerWidth <= 768;
+  if (!isMobile) return;
+  const formPanel = document.getElementById('panel-form');
+  const previewPanel = document.getElementById('panel-preview');
+  const tabForm = document.getElementById('tab-form');
+  const tabPreview = document.getElementById('tab-preview');
+
+  if (tab === 'form') {
+    formPanel.classList.add('tab-active');
+    previewPanel.classList.remove('tab-active');
+    tabForm.classList.add('active');
+    tabPreview.classList.remove('active');
+  } else {
+    previewPanel.classList.add('tab-active');
+    formPanel.classList.remove('tab-active');
+    tabPreview.classList.add('active');
+    tabForm.classList.remove('active');
+    previewPanel.scrollTop = 0;
+  }
+}
+
+/* On resize, always show both panels on desktop */
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) {
+    document.getElementById('panel-form').classList.add('tab-active');
+    document.getElementById('panel-preview').classList.add('tab-active');
+  }
+});
+
+
 let items = [
   { name:'Café en grains torrefiés', desc:"Café provenant de Colombie, provenant directement d'un producteur local.", qty:'6 kg', price:20 },
   { name:'Machine à café', desc:"Machine à café prête à l'emploi pour votre commerce.", qty:'1', price:900 },
