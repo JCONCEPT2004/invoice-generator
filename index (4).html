@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Générateur de Facture Proforma</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --c1: #2563EB;
+  --c1-light: #3B82F6;
+  --c1-dark: #1D4ED8;
+  --c2: #06B6D4;
+  --c1-rgb: 37,99,235;
+  --bg: #F0F4FF;
+  --surface: #FFFFFF;
+  --border: #D1D9F0;
+  --text: #1E2A4A;
+  --muted: #64748B;
+  --success: #10B981;
+  --shadow-lg: 0 8px 48px rgba(37,99,235,0.16);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: linear-gradient(135deg, var(--c1-dark) 0%, var(--c1) 60%, var(--c2) 100%);
+  color: white;
+  padding: 20px 44px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-lg);
+  transition: background .4s;
+}
+
+header .hicon {
+  width: 42px;
+  height: 42px;
+  background: rgba(255,255,255,.15);
+  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+}
+
+header h1 {
+  font-family:'Playfair Display',serif;
+  font-size:1.5rem;
+  font-weight:700;
+}
+
+header p {
+  font-size:.78rem;
+  opacity:.75;
+  margin-top:2px;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 440px 1fr;
+  flex:1;
+  min-height:0;
+}
+
+/* FORM PANEL */
+  .form-panel {
+  background: var(--surface);
+  border-right: 2px solid var(--border);
+  overflow-y: auto;
+  padding: 26px 22px 0;
+}
+
+.section-title {
+  font-family:'Playfair Display',serif;
+  font-size:.92rem;
+  font-weight:700;
+  color:var(--c1);
+  margin:22px 0 10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  transition:color .3s;
+}
+
+.section-title:first-child {
+  margin-top:0;
+}
+
+.section-title::after {
+  content:'';
+  flex:1;
+  height:1.5px;
+  background:linear-gradient(90deg,var(--c1-light),transparent);
+  margin-left:4px;
+}
+
+label {
+  display:block;
+  font-size:.74rem;
+  font-weight:600;
+  color:var(--muted);
+  margin-bottom:4px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+input[type=text], input[type=email], input[type=number], input[type=date], textarea, select {
+  width:100%;
+  padding:8px 11px;
+  border:1.5px solid var(--border);
+  border-radius:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:.86rem;
+  color:var(--text);
+  background:#F8FAFF;
+  transition:border .15s, box-shadow .15s;
+  margin-bottom:10px;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline:none;
+  border-color:var(--c1);
+  box-shadow:0 0 0 3px rgba(var(--c1-rgb),.12);
+  background:white;
+}
+
+textarea {
+  resize:vertical;
+  min-height:48px;
+}
+
+.row2 {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+
+.row3 {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:7px;
+}
+
+/* LOGO ZONE */
+  .logo-zone {
+  border: 2px dashed var(--border);
+  border-radius:12px;
+  padding:16px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+  background:#F8FAFF;
+  margin-bottom:12px;
+}
+
+.logo-zone:hover, .logo-zone.over {
+  border-color:var(--c1);
+  background:#EEF2FF;
+}
+
+.logo-zone input[type=file] {
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+  width:100%;
+  height:100%;
+  margin:0;
+  padding:0;
+}
+
+.logo-placeholder {
+  pointer-events:none;
+}
+
+.logo-placeholder .ico {
+  font-size:2rem;
+  margin-bottom:5px;
+}
+
+.logo-placeholder .txt {
+  font-size:.82rem;
+  color:var(--muted);
+  font-weight:500;
+}
+
+.logo-placeholder .hint {
+  font-size:.71rem;
+  color:var(--muted);
+  opacity:.65;
+  margin-top:2px;
+}
+
+.logo-preview {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+
+.logo-preview.show {
+  display:flex;
+}
+
+.logo-preview img {
+  max-height:68px;
+  max-width:190px;
+  object-fit:contain;
+  border-radius:6px;
+}
+
+.logo-rm {
+  font-size:.73rem;
+  color:#EF4444;
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-weight:600;
+  padding:2px 8px;
+  border-radius:6px;
+  transition:background .15s;
+}
+
+.logo-rm:hover {
+  background:#FEE2E2;
+}
+
+/* PALETTE */
+  #palette-wrap {
+  display:none;
+  margin-bottom:4px;
+}
+
+.palette-hint {
+  font-size:.71rem;
+  color:var(--muted);
+  margin-bottom:7px;
+}
+
+.swatches {
+  display:flex;
+  gap:7px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.swatch {
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  border:2.5px solid white;
+  box-shadow:0 2px 6px rgba(0,0,0,.18);
+  cursor:pointer;
+  transition:transform .15s;
+  position:relative;
+  flex-shrink:0;
+}
+
+.swatch:hover {
+  transform:scale(1.18);
+}
+
+.swatch.sel::after {
+  content:'✓';
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  font-size:.65rem;
+  font-weight:800;
+  text-shadow:0 1px 3px rgba(0,0,0,.6);
+}
+
+.swatch-label {
+  font-size:.68rem;
+  color:var(--muted);
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+}
+
+/* MANUAL COLORS */
+  .color-row {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-bottom:10px;
+}
+
+.cfield {
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.cfield label {
+  margin:0;
+  flex-shrink:0;
+  min-width:0;
+}
+
+.cfield input[type=color] {
+  width:34px;
+  height:34px;
+  padding:2px;
+  border-radius:8px;
+  border:1.5px solid var(--border);
+  cursor:pointer;
+  margin:0;
+  background:none;
+  flex-shrink:0;
+}
+
+.cfield input[type=text] {
+  flex:1;
+  margin:0;
+  font-size:.78rem;
+  min-width:0;
+}
+
+/* ITEMS */
+  .items-list {
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  margin-bottom:10px;
+}
+
+.item-card {
+  background:#F0F4FF;
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  padding:11px 13px;
+  position:relative;
+}
+
+.item-card input {
+  margin-bottom:0;
+}
+
+.item-card .rm {
+  position:absolute;
+  top:8px;
+  right:8px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  color:#EF4444;
+  font-size:.95rem;
+  padding:2px 6px;
+  border-radius:6px;
+  transition:background .15s;
+}
+
+.item-card .rm:hover {
+  background:#FEE2E2;
+}
+
+.ilabel {
+  font-size:.69rem;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.4px;
+  margin-bottom:2px;
+}
+
+/* BUTTONS */
+  .btn {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:8px 16px;
+  border-radius:9px;
+  border:none;
+  font-family:'DM Sans',sans-serif;
+  font-size:.84rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .15s;
+}
+
+.btn-outline {
+  background:white;
+  border:1.5px solid var(--c1);
+  color:var(--c1);
+}
+
+.btn-outline:hover {
+  background:#EEF2FF;
+}
+
+.btn-primary {
+  background:linear-gradient(135deg,var(--c1) 0%,var(--c1-light) 100%);
+  color:white;
+  box-shadow:0 3px 10px rgba(var(--c1-rgb),.3);
+}
+
+.btn-primary:hover {
+  transform:translateY(-1px);
+}
+
+.btn-success {
+  background:linear-gradient(135deg,var(--success) 0%,#34D399 100%);
+  color:white;
+  box-shadow:0 3px 10px rgba(16,185,129,.3);
+}
+
+.btn-success:hover {
+  transform:translateY(-1px);
+}
+
+.form-actions {
+  display:flex;
+  gap:9px;
+  margin-top:18px;
+  position:sticky;
+  bottom:0;
+  background:white;
+  padding:11px 0 12px;
+  border-top:1px solid var(--border);
+}
+
+.form-actions .btn {
+  flex:1;
+  justify-content:center;
+}
+
+/* PREVIEW */
+  .preview-panel {
+  background: var(--surface);
+  overflow-y:auto;
+  padding: 26px 22px 30px;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+}
+
+.preview-panel > h2 {
+  font-family:'Playfair Display',serif;
+  font-size:.92rem;
+  font-weight:700;
+  color:var(--c1);
+  margin: 0 0 18px 0;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.preview-panel > h2::after {
+  content:'';
+  flex:1;
+  height:1.5px;
+  background:linear-gradient(90deg,var(--c1-light),transparent);
+  margin-left:4px;
+}
+
+/* INVOICE DOC */
+  #invoice-doc {
+  background:white;
+  width:100%;
+  box-shadow: 0 2px 16px rgba(37,99,235,0.10);
+  border-radius:12px;
+  border: 1.5px solid var(--border);
+  padding:38px 42px;
+  position:relative;
+  overflow:hidden;
+}
+
+#invoice-doc::before {
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:4px;
+  background:linear-gradient(90deg,var(--c1-dark),var(--c1-light),var(--c2));
+}
+
+.inv-header {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  align-items:start;
+  margin-bottom:24px;
+}
+
+.inv-logo {
+  margin-bottom:9px;
+}
+
+.inv-logo img {
+  max-height:62px;
+  max-width:180px;
+  object-fit:contain;
+}
+
+.inv-company-name {
+  font-family:'Playfair Display',serif;
+  font-size:1.25rem;
+  font-weight:700;
+  margin-bottom:3px;
+}
+
+.inv-company-info {
+  font-size:.78rem;
+  color:var(--muted);
+  line-height:1.75;
+}
+
+.inv-title-block {
+  text-align:right;
+}
+
+.inv-title {
+  font-family:'Playfair Display',serif;
+  font-size:1.8rem;
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.inv-meta {
+  font-size:.8rem;
+  color:var(--muted);
+  line-height:1.75;
+}
+
+.inv-meta strong {
+  color:var(--text);
+}
+
+.inv-parties {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:24px;
+}
+
+.inv-party {
+  background:#F8FAFF;
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  padding:12px 14px;
+}
+
+.inv-party.client {
+  border-color:var(--c1-light);
+  background:#EEF2FF;
+}
+
+.inv-plabel {
+  font-size:.67rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--c1);
+  margin-bottom:5px;
+}
+
+.inv-pname {
+  font-weight:600;
+  font-size:.87rem;
+}
+
+.inv-pinfo {
+  font-size:.78rem;
+  color:var(--muted);
+  line-height:1.7;
+}
+
+.inv-table {
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  margin-bottom:18px;
+}
+
+.inv-table thead tr {
+  color:white;
+  border-radius:6px;
+  overflow:hidden;
+}
+
+.inv-table thead th {
+  padding:9px 12px;
+  font-size:.74rem;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  text-align:left;
+  border-top:none;
+  border-bottom:none;
+}
+
+.inv-table thead th:not(:first-child) {
+  text-align:right;
+}
+
+.inv-table thead th:first-child {
+  border-radius:6px 0 0 6px;
+}
+
+.inv-table thead th:last-child {
+  border-radius:0 6px 6px 0;
+}
+
+.inv-table tbody tr {
+  border-bottom:none;
+}
+
+.inv-table tbody td {
+  border-bottom:1px solid #EEF2FF;
+}
+
+.inv-table tbody tr:hover td {
+  background:#F8FAFF;
+}
+
+.inv-table td {
+  padding:10px 12px;
+  font-size:.82rem;
+  vertical-align:top;
+}
+
+.inv-table td:not(:first-child) {
+  text-align:right;
+  white-space:nowrap;
+}
+
+.inv-iname {
+  font-weight:600;
+}
+
+.inv-idesc {
+  font-size:.74rem;
+  color:var(--muted);
+  margin-top:2px;
+  line-height:1.5;
+}
+
+.inv-bottom {
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:18px;
+  align-items:end;
+  margin-top:4px;
+}
+
+.inv-notes {
+  background:#F8FAFF;
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  padding:11px 13px;
+  font-size:.77rem;
+  color:var(--muted);
+  line-height:1.65;
+}
+
+.inv-notes strong {
+  color:var(--text);
+  display:block;
+  margin-bottom:3px;
+  font-size:.78rem;
+}
+
+.inv-totals {
+  min-width:210px;
+}
+
+.inv-trow {
+  display:flex;
+  justify-content:space-between;
+  padding:5px 0;
+  font-size:.83rem;
+  border-bottom:1px solid #EEF2FF;
+}
+
+.inv-trow span:first-child {
+  color:var(--muted);
+}
+
+.inv-ttc {
+  border-radius:8px;
+  padding:10px 13px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-weight:700;
+  font-size:.92rem;
+  margin-top:6px;
+}
+
+.inv-footer {
+  margin-top:24px;
+  padding-top:14px;
+  border-top:1.5px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:.7rem;
+  color:var(--muted);
+}
+
+.inv-badge {
+  background:#F0FDF4;
+  border:1px solid #A7F3D0;
+  color:var(--success);
+  font-size:.68rem;
+  font-weight:700;
+  padding:3px 10px;
+  border-radius:20px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+::-webkit-scrollbar {
+  width:5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background:var(--border);
+  border-radius:3px;
+}
+
+/* ========== RESPONSIVE MOBILE ========== */
+
+  /* Tabs for mobile navigation */
+  .mobile-tabs {
+  display: none;
+  background: white;
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+}
+
+.mobile-tabs-inner {
+  display: flex;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px 8px;
+  border: none;
+  background: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s;
+  border-bottom: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.tab-btn.active {
+  color: var(--c1);
+  border-bottom-color: var(--c1);
+  background: #F0F4FF;
+}
+
+@media (max-width: 768px) {
+
+/* Header */
+    header {
+  padding: 14px 18px;
+  gap: 12px;
+}
+
+header h1 {
+  font-size: 1.15rem;
+}
+
+header p {
+  font-size: .72rem;
+}
+
+header .hicon {
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  border-radius: 10px;
+}
+
+/* Mobile tabs */
+    .mobile-tabs {
+  display: block;
+}
+
+/* App layout: single column */
+    .app {
+  grid-template-columns: 1fr;
+  display: block;
+}
+
+/* Panels: hidden/visible via tabs */
+    .form-panel {
+  border-right: none;
+  border-bottom: 2px solid var(--border);
+  padding: 16px 14px 0;
+  display: none;
+}
+
+.form-panel.tab-active {
+  display: block;
+}
+
+.preview-panel {
+  padding: 16px 10px 24px;
+  display: none;
+}
+
+.preview-panel.tab-active {
+  display: flex;
+}
+
+.preview-panel > h2 {
+  font-size: .78rem;
+  margin-bottom: 12px;
+}
+
+/* Invoice doc on mobile */
+    #invoice-doc {
+  padding: 18px 14px;
+  width: 100%;
+}
+
+/* Invoice header: stack vertically */
+    .inv-header {
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.inv-title-block {
+  text-align: left;
+}
+
+.inv-title {
+  font-size: 1.4rem;
+}
+
+/* Invoice parties: stack vertically */
+    .inv-parties {
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* Invoice table: compact */
+    .inv-table thead th,
+    .inv-table td {
+  padding: 7px 8px;
+  font-size: .75rem;
+}
+
+/* Invoice bottom: stack vertically */
+    .inv-bottom {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.inv-totals {
+  min-width: unset;
+  width: 100%;
+}
+
+/* Invoice footer: stack */
+    .inv-footer {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: .68rem;
+}
+
+/* Form rows: 1 column on mobile */
+    .row2 {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.row3 {
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.row3 > div:last-child {
+  grid-column: 1 / -1;
+}
+
+/* Sticky actions */
+    .form-actions {
+  padding: 10px 0 14px;
+  gap: 8px;
+}
+
+.form-actions .btn {
+  font-size: .82rem;
+  padding: 10px 10px;
+}
+
+/* Color row */
+    .color-row {
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* Section titles */
+    .section-title {
+  font-size: .85rem;
+  margin: 18px 0 8px;
+}
+
+/* Item cards */
+    .item-card {
+  padding: 10px 11px;
+}
+
+  
+}
+
+@media (max-width: 400px) {
+
+header h1 {
+  font-size: 1rem;
+}
+
+header p {
+  display: none;
+}
+
+#invoice-doc {
+  padding: 14px 10px;
+}
+
+.inv-table thead th,
+    .inv-table td {
+  padding: 5px 5px;
+  font-size: .7rem;
+}
+
+.color-row {
+  grid-template-columns: 1fr;
+}
+
+.row3 {
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+  
+}
+
+@media print {
+
+  /* ---- Page setup ---- */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  /* ---- Force couleurs exactes (fond, dégradés, bordures) ---- */
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ---- Masquer tout sauf la facture ---- */
+  header,
+  .form-panel,
+  .preview-panel > h2,
+  .mobile-tabs,
+  nav {
+    display: none !important;
+  }
+
+  /* ---- Body & app : pleine page blanche ---- */
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: white !important;
+  }
+
+  .app {
+    display: block !important;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ---- Panneau aperçu : prend toute la page ---- */
+  .preview-panel {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 14mm 14mm !important;
+    background: white !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ---- La facture elle-même ---- */
+  #invoice-doc {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: white !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 8mm 10mm 10mm 10mm !important;
+    overflow: visible !important;
+    page-break-inside: avoid;
+  }
+
+  /* ---- Barre colorée en haut ---- */
+  #invoice-doc::before {
+    content: '' !important;
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 5px !important;
+    background: linear-gradient(90deg, var(--c1-dark), var(--c1-light), var(--c2)) !important;
+  }
+
+  /* ---- En-tête : 2 colonnes côte à côte ---- */
+  .inv-header {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    align-items: start !important;
+    margin-bottom: 24px !important;
+  }
+
+  .inv-title-block {
+    text-align: right !important;
+  }
+
+  /* ---- Émetteur / Client : 2 colonnes ---- */
+  .inv-parties {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .inv-party {
+    background: #F8FAFF !important;
+    border: 1.5px solid #D1D9F0 !important;
+    border-radius: 10px !important;
+    padding: 12px 14px !important;
+  }
+
+  /* ---- Tableau ---- */
+  .inv-table {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    margin-bottom: 18px !important;
+  }
+
+  .inv-table thead th {
+    padding: 9px 12px !important;
+    font-size: .74rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: .5px !important;
+    text-align: left !important;
+    border-top: none !important;
+    border-bottom: none !important;
+  }
+
+  .inv-table thead th:not(:first-child) {
+    text-align: right !important;
+  }
+
+  .inv-table thead th:first-child {
+    border-radius: 6px 0 0 6px !important;
+  }
+
+  .inv-table thead th:last-child {
+    border-radius: 0 6px 6px 0 !important;
+  }
+
+  .inv-table tbody td {
+    border-bottom: 1px solid #EEF2FF !important;
+  }
+
+  .inv-table td {
+    padding: 10px 12px !important;
+    font-size: .82rem !important;
+    vertical-align: top !important;
+  }
+
+  .inv-table td:not(:first-child) {
+    text-align: right !important;
+    white-space: nowrap !important;
+  }
+
+  /* ---- Bas : notes + totaux côte à côte ---- */
+  .inv-bottom {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 18px !important;
+    align-items: end !important;
+    margin-top: 4px !important;
+  }
+
+  .inv-notes {
+    background: #F8FAFF !important;
+    border: 1.5px solid #D1D9F0 !important;
+    border-radius: 10px !important;
+    padding: 11px 13px !important;
+    font-size: .77rem !important;
+    line-height: 1.65 !important;
+  }
+
+  .inv-totals {
+    min-width: 210px !important;
+  }
+
+  .inv-trow {
+    display: flex !important;
+    justify-content: space-between !important;
+    padding: 5px 0 !important;
+    font-size: .83rem !important;
+    border-bottom: 1px solid #EEF2FF !important;
+  }
+
+  .inv-ttc {
+    border-radius: 8px !important;
+    padding: 10px 13px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-weight: 700 !important;
+    font-size: .92rem !important;
+    margin-top: 6px !important;
+  }
+
+  /* ---- Footer ---- */
+  .inv-footer {
+    margin-top: 24px !important;
+    padding-top: 14px !important;
+    border-top: 1.5px solid #D1D9F0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: .7rem !important;
+    color: #64748B !important;
+  }
+
+  .inv-badge {
+    background: #F0FDF4 !important;
+    border: 1px solid #A7F3D0 !important;
+    color: #10B981 !important;
+    font-size: .68rem !important;
+    font-weight: 700 !important;
+    padding: 3px 10px !important;
+    border-radius: 20px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+  }
+}
+
+
+</style>
+</head>
+<body>
+
+<header id="app-header">
+  <div class="hicon">📄</div>
+  <div>
+    <h1>Générateur de Facture Proforma</h1>
+    <p>Uploadez votre logo — les couleurs s'adaptent automatiquement à votre charte</p>
+  </div>
+</header>
+
+<!-- Mobile tabs navigation -->
+<nav class="mobile-tabs" id="mobile-tabs">
+  <div class="mobile-tabs-inner">
+    <button class="tab-btn active" id="tab-form" onclick="switchTab('form')">
+      ✏️ Formulaire
+    </button>
+    <button class="tab-btn" id="tab-preview" onclick="switchTab('preview')">
+      👁️ Aperçu
+    </button>
+  </div>
+</nav>
+
+<div class="app">
+
+  <!-- ====== FORM ====== -->
+  <div class="form-panel tab-active" id="panel-form">
+
+    <div class="section-title">🎨 Logo & Identité Visuelle</div>
+
+    <!-- Logo drop zone -->
+    <div class="logo-zone" id="logo-zone">
+      <input type="file" id="logo-input" accept="image/*" onchange="handleLogo(event)">
+      <div class="logo-placeholder" id="logo-ph">
+        <div class="ico">🖼️</div>
+        <div class="txt">Glissez votre logo ici ou cliquez pour choisir</div>
+        <div class="hint">PNG · JPG · SVG · WEBP — max 5 Mo</div>
+      </div>
+      <div class="logo-preview" id="logo-prev">
+        <img id="logo-img" src="" alt="Logo">
+        <button class="logo-rm" onclick="removeLogo(event)">✕ Supprimer le logo</button>
+      </div>
+    </div>
+
+    <!-- Extracted palette -->
+    <div id="palette-wrap">
+      <p class="palette-hint">🎯 Couleurs extraites du logo — cliquez pour les appliquer :</p>
+      <div class="swatches" id="swatches"></div>
+      <br>
+    </div>
+
+    <!-- Manual color pickers -->
+    <div class="color-row">
+      <div>
+        <label>Couleur principale</label>
+        <div class="cfield">
+          <input type="color" id="cp" value="#2563EB" oninput="onPickerChange('p',this.value)">
+          <input type="text" id="cp-hex" value="#2563EB" oninput="onHexChange('p',this.value)" maxlength="7" placeholder="#2563EB">
+        </div>
+      </div>
+      <div>
+        <label>Couleur accent</label>
+        <div class="cfield">
+          <input type="color" id="cs" value="#06B6D4" oninput="onPickerChange('s',this.value)">
+          <input type="text" id="cs-hex" value="#06B6D4" oninput="onHexChange('s',this.value)" maxlength="7" placeholder="#06B6D4">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">🏢 Émetteur</div>
+    <label>Nom de l'entreprise</label>
+    <input type="text" id="f-company" value="My First Company" placeholder="My First Company">
+    <div class="row2">
+      <div><label>Adresse</label><input type="text" id="f-address" value="5 rue de la Paix" placeholder="Adresse"></div>
+      <div><label>Code postal & Ville</label><input type="text" id="f-city" value="31000 Toulouse" placeholder="31000 Toulouse"></div>
+    </div>
+    <div class="row2">
+      <div><label>Email</label><input type="email" id="f-email" value="jean@gmail.com" placeholder="email@domaine.fr"></div>
+      <div><label>Téléphone</label><input type="text" id="f-phone" placeholder="06 00 00 00 00"></div>
+    </div>
+    <label>SIRET (optionnel)</label>
+    <input type="text" id="f-siret" placeholder="123 456 789 00012">
+
+    <div class="section-title">👤 Client</div>
+    <label>Nom du client</label>
+    <input type="text" id="c-name" value="Monsieur Nicolas Dupont" placeholder="Prénom Nom">
+    <label>Société (optionnel)</label>
+    <input type="text" id="c-company" placeholder="Entreprise cliente">
+    <div class="row2">
+      <div><label>Adresse</label><input type="text" id="c-address" value="6 rue de l'entreprise" placeholder="Adresse"></div>
+      <div><label>Ville</label><input type="text" id="c-city" value="31400 Toulouse" placeholder="Ville"></div>
+    </div>
+
+    <div class="section-title">📋 Facture</div>
+    <div class="row2">
+      <div><label>Numéro</label><input type="text" id="inv-num" value="PRO-2023-001" placeholder="PRO-2024-001"></div>
+      <div><label>Date</label><input type="date" id="inv-date" value="2023-04-12"></div>
+    </div>
+    <label>Référence / Objet</label>
+    <input type="text" id="inv-ref" value="Commande café" placeholder="Objet de la commande">
+    <div class="row2">
+      <div><label>Taux TVA (%)</label><input type="number" id="inv-tva" value="20" min="0" max="100" placeholder="20"></div>
+      <div>
+        <label>Devise</label>
+        <select id="inv-currency">
+          <option value="€" selected>EUR (€)</option>
+          <option value="$">USD ($)</option>
+          <option value="£">GBP (£)</option>
+          <option value="FCFA">FCFA</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-title">📦 Produits / Services</div>
+    <div class="items-list" id="items-list"></div>
+    <button class="btn btn-outline" onclick="addItem()">＋ Ajouter une ligne</button>
+
+    <div class="section-title">📝 Notes & Conditions</div>
+    <label>Adresse de livraison</label>
+    <input type="text" id="f-delivery" placeholder="Même adresse que le client">
+    <label>Conditions de paiement</label>
+    <input type="text" id="f-payment" value="Paiement dans les 30 jours suivant l'émission de la facture.">
+    <label>Notes supplémentaires</label>
+    <textarea id="f-notes" placeholder="Informations complémentaires..."></textarea>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="genInvoice(); switchTab('preview')">⚡ Générer</button>
+      <button class="btn btn-success" onclick="printIt()">🖨️ PDF</button>
+    </div>
+  </div>
+
+  <!-- ====== PREVIEW ====== -->
+  <div class="preview-panel tab-active" id="panel-preview">
+    <h2>👁️ Aperçu en temps réel</h2>
+    <div id="invoice-doc"></div>
+  </div>
+</div>
+
+<canvas id="cvs" style="display:none"></canvas>
+
+<script>
+
+/* =================== MOBILE TABS =================== */
+function switchTab(tab) {
+  const isMobile = window.innerWidth <= 768;
+  if (!isMobile) return;
+  const formPanel = document.getElementById('panel-form');
+  const previewPanel = document.getElementById('panel-preview');
+  const tabForm = document.getElementById('tab-form');
+  const tabPreview = document.getElementById('tab-preview');
+
+  if (tab === 'form') {
+    formPanel.classList.add('tab-active');
+    previewPanel.classList.remove('tab-active');
+    tabForm.classList.add('active');
+    tabPreview.classList.remove('active');
+  } else {
+    previewPanel.classList.add('tab-active');
+    formPanel.classList.remove('tab-active');
+    tabPreview.classList.add('active');
+    tabForm.classList.remove('active');
+    previewPanel.scrollTop = 0;
+  }
+}
+
+/* On resize, always show both panels on desktop */
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+      document.getElementById('panel-form').classList.add('tab-active');
+      document.getElementById('panel-preview').classList.add('tab-active');
+    }
+});
+
+let items = [
+  { name:'Café en grains torrefiés', desc:"Café provenant de Colombie, provenant directement d'un producteur local.", qty:'6 kg', price:20 },
+  { name:'Machine à café', desc:"Machine à café prête à l'emploi pour votre commerce.", qty:'1', price:900 },
+];
+let logoSrc = null;
+let C = { p:'#2563EB', s:'#06B6D4' }; // brand colors
+
+/* =================== COLOR UTILS =================== */
+const hexToRgb = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+const rgbToHex = (r,g,b) => '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+const lum = rgb => 0.2126*(rgb[0]/255) + 0.7152*(rgb[1]/255) + 0.0722*(rgb[2]/255);
+const dist = (a,b) => Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2);
+const sat = ([r,g,b]) => { const mx=Math.max(r,g,b)/255,mn=Math.min(r,g,b)/255,l=(mx+mn)/2; return l===0||l===1?0:(mx-mn)/(1-Math.abs(2*l-1)); };
+const isGray = h => { const rgb=hexToRgb(h); return (Math.max(...rgb)-Math.min(...rgb))<24; };
+const isWhite = h => lum(hexToRgb(h)) > 0.86;
+
+function darken(hex, a=0.22) {
+  return rgbToHex(...hexToRgb(hex).map(v=>Math.round(v*(1-a))));
+}
+function lighten(hex, a=0.3) {
+  return rgbToHex(...hexToRgb(hex).map(v=>Math.round(v+(255-v)*a)));
+}
+function textOn(hex) { return lum(hexToRgb(hex)) > 0.45 ? '#1E2A4A' : '#FFFFFF'; }
+
+/* =================== COLOR EXTRACTION =================== */
+function extractPalette(img, k=8) {
+  const cvs = document.getElementById('cvs');
+  const ctx = cvs.getContext('2d');
+  cvs.width = cvs.height = 90;
+  ctx.drawImage(img, 0, 0, 90, 90);
+  const data = ctx.getImageData(0,0,90,90).data;
+  const pixels = [];
+  for (let i=0; i<data.length; i+=12) {
+    if (data[i+3] < 40) continue;
+    const hex = rgbToHex(data[i], data[i+1], data[i+2]);
+    if (isWhite(hex)) continue;
+    pixels.push([data[i], data[i+1], data[i+2]]);
+  }
+  if (!pixels.length) return [];
+
+  // k-means
+  let centers = Array.from({length:k}, (_,i) => pixels[Math.floor(i*pixels.length/k)]);
+  for (let iter=0; iter<14; iter++) {
+    const clusters = Array.from({length:k}, ()=>[]);
+    pixels.forEach(p => {
+        let md=Infinity, ci=0;
+        centers.forEach((c,i)=>{ const d=dist(p,c); if(d<md){md=d;ci=i;} });
+        clusters[ci].push(p);
+    });
+    centers = clusters.map(cl => {
+        if (!cl.length) return [128,128,128];
+        const s = cl.reduce((a,p)=>[a[0]+p[0],a[1]+p[1],a[2]+p[2]],[0,0,0]);
+        return s.map(v=>Math.round(v/cl.length));
+    });
+  }
+
+  const hexes = centers.map(([r,g,b])=>rgbToHex(r,g,b)).filter(h=>!isGray(h)&&!isWhite(h));
+  hexes.sort((a,b) => sat(hexToRgb(b)) - sat(hexToRgb(a)));
+
+  const uniq = [];
+  hexes.forEach(h => { if (!uniq.some(u=>dist(hexToRgb(h),hexToRgb(u))<40)) uniq.push(h); });
+  return uniq.slice(0,6);
+}
+
+/* =================== APPLY BRAND COLORS =================== */
+function applyColors(primary, secondary) {
+  C.p = primary;
+  C.s = secondary || lighten(primary, 0.38);
+
+  const dk = darken(primary, 0.22);
+  const lt = lighten(primary, 0.18);
+  const [r,g,b] = hexToRgb(primary);
+
+  const root = document.documentElement;
+  root.style.setProperty('--c1', primary);
+  root.style.setProperty('--c1-dark', dk);
+  root.style.setProperty('--c1-light', lt);
+  root.style.setProperty('--c2', C.s);
+  root.style.setProperty('--c1-rgb', `${r},${g},${b}`);
+
+  document.getElementById('cp').value = primary;
+  document.getElementById('cp-hex').value = primary;
+  document.getElementById('cs').value = C.s;
+  document.getElementById('cs-hex').value = C.s;
+
+  // Update header gradient
+  document.getElementById('app-header').style.background =
+  `linear-gradient(135deg, ${dk} 0%, ${primary} 60%, ${C.s} 100%)`;
+
+  genInvoice();
+}
+
+function onPickerChange(which, val) {
+  document.getElementById(which==='p'?'cp-hex':'cs-hex').value = val;
+  which==='p' ? applyColors(val, C.s) : applyColors(C.p, val);
+}
+function onHexChange(which, val) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(val)) return;
+  document.getElementById(which==='p'?'cp':'cs').value = val;
+  which==='p' ? applyColors(val, C.s) : applyColors(C.p, val);
+}
+
+/* =================== LOGO HANDLING =================== */
+function handleLogo(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    logoSrc = ev.target.result;
+    document.getElementById('logo-ph').style.display = 'none';
+    const prev = document.getElementById('logo-prev');
+    prev.classList.add('show');
+    document.getElementById('logo-img').src = logoSrc;
+
+    // Extract colors
+    const img = new Image();
+    img.onload = () => {
+      const palette = extractPalette(img);
+      if (!palette.length) { genInvoice(); return; }
+      applyColors(palette[0], palette[1] || lighten(palette[0], 0.38));
+      showSwatches(palette);
+    };
+    img.src = logoSrc;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo(e) {
+  e.stopPropagation(); e.preventDefault();
+  logoSrc = null;
+  document.getElementById('logo-input').value = '';
+  document.getElementById('logo-ph').style.display = '';
+  document.getElementById('logo-prev').classList.remove('show');
+  document.getElementById('palette-wrap').style.display = 'none';
+  genInvoice();
+}
+
+function showSwatches(palette) {
+  const wrap = document.getElementById('palette-wrap');
+  wrap.style.display = 'block';
+  const container = document.getElementById('swatches');
+  container.innerHTML = '<span class="swatch-label">Palette</span>';
+  palette.forEach((hex, i) => {
+      const el = document.createElement('div');
+      el.className = 'swatch' + (i===0?' sel':'');
+      el.style.background = hex;
+      el.title = hex;
+      el.dataset.hex = hex;
+      el.onclick = () => {
+        container.querySelectorAll('.swatch').forEach(s=>s.classList.remove('sel'));
+        el.classList.add('sel');
+        applyColors(hex, C.s);
+      };
+      container.appendChild(el);
+  });
+}
+
+/* drag and drop */
+const lz = document.getElementById('logo-zone');
+lz.addEventListener('dragover', e => { e.preventDefault(); lz.classList.add('over'); });
+lz.addEventListener('dragleave', () => lz.classList.remove('over'));
+lz.addEventListener('drop', e => {
+    e.preventDefault(); lz.classList.remove('over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) handleLogo({target:{files:[f]}});
+});
+
+/* =================== ITEMS =================== */
+function renderItems() {
+  document.getElementById('items-list').innerHTML = items.map((item, i) => `
+    <div class="item-card">
+    <button class="rm" onclick="removeItem(${i})">✕</button>
+    <div class="ilabel">Désignation</div>
+    <input type="text" value="${item.name.replace(/"/g,'&quot;')}" oninput="items[${i}].name=this.value;genInvoice()" placeholder="Produit / service" style="margin-bottom:6px">
+    <div class="ilabel">Description</div>
+    <input type="text" value="${item.desc.replace(/"/g,'&quot;')}" oninput="items[${i}].desc=this.value;genInvoice()" placeholder="Description courte" style="margin-bottom:6px">
+    <div class="row3" style="margin-top:2px">
+    <div><div class="ilabel">Prix HT</div><input type="number" value="${item.price}" oninput="items[${i}].price=parseFloat(this.value)||0;genInvoice()" min="0" step="0.01"></div>
+    <div><div class="ilabel">Quantité</div><input type="text" value="${item.qty}" oninput="items[${i}].qty=this.value;genInvoice()" placeholder="1"></div>
+    <div><div class="ilabel">Total HT</div><input type="text" value="${itemTotal(item)}" readonly style="background:#EEF2FF;color:var(--c1);font-weight:600"></div>
+    </div>
+    </div>`).join('');
+}
+const itemTotal = item => (item.price * (parseFloat(item.qty)||1)).toFixed(2);
+function addItem() { items.push({name:'',desc:'',qty:'1',price:0}); renderItems(); }
+function removeItem(i) { items.splice(i,1); renderItems(); genInvoice(); }
+
+/* =================== GENERATE INVOICE =================== */
+const g = id => document.getElementById(id)?.value?.trim() || '';
+
+function genInvoice() {
+  const tva = parseFloat(g('inv-tva')) || 0;
+  const cur = g('inv-currency') || '€';
+  let ht = 0;
+  items.forEach(it => ht += it.price * (parseFloat(it.qty)||1));
+  const tvaAmt = ht * tva / 100;
+  const ttc = ht + tvaAmt;
+  const fmt = v => v.toFixed(2).replace('.',',') + ' ' + cur;
+
+  const dateStr = (() => {
+      const d = g('inv-date');
+      if (!d) return new Date().toLocaleDateString('fr-FR');
+      const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`;
+  })();
+
+  const rows = items.map(it => {
+      const n = parseFloat(it.qty)||1;
+      return `<tr>
+      <td>
+      <div class="inv-iname">${it.name||'—'}</div>
+      ${it.desc ? `<div class="inv-idesc">${it.desc}</div>` : ''}
+      </td>
+      <td>${it.price.toFixed(2).replace('.',',')} ${cur}</td>
+      <td>${it.qty}</td>
+      <td><strong>${(it.price*n).toFixed(2).replace('.',',')} ${cur}</strong></td>
+      </tr>`;
+  }).join('');
+
+  const delivery = g('f-delivery') || `${g('c-name')}, ${g('c-address')}, ${g('c-city')}`;
+  const txtOnP = textOn(C.p);
+  const clientBg = lighten(C.p, 0.90);
+  const clientBorder = lighten(C.p, 0.55);
+
+  document.getElementById('invoice-doc').innerHTML = `
+  <div class="inv-header">
+  <div>
+  ${logoSrc ? `<div class="inv-logo"><img src="${logoSrc}" alt="Logo entreprise"></div>` : ''}
+  <div class="inv-company-name" style="color:${C.p}">${g('f-company')||'Mon Entreprise'}</div>
+  <div class="inv-company-info">
+  ${g('f-address')?g('f-address')+'<br>':''}${g('f-city')||''}
+  ${g('f-email')?'<br>'+g('f-email'):''}
+  ${g('f-phone')?'<br>'+g('f-phone'):''}
+  ${g('f-siret')?'<br><strong>SIRET :</strong> '+g('f-siret'):''}
+  </div>
+  </div>
+  <div class="inv-title-block">
+  <div class="inv-title" style="color:${C.p}">Facture Proforma</div>
+  <div class="inv-meta">
+  <strong>${g('f-city')||''}</strong>${g('f-city')?', le ':'Le '}${dateStr}<br>
+  ${g('inv-ref')?`(Commande '<em>${g('inv-ref')}</em>')` :''}
+  ${g('inv-num')?'<br>N° '+g('inv-num'):''}
+  </div>
+  </div>
+  </div>
+
+  <div class="inv-parties">
+  <div class="inv-party">
+  <div class="inv-plabel" style="color:${C.p}">Émetteur</div>
+  <div class="inv-pname">${g('f-company')}</div>
+  <div class="inv-pinfo">${g('f-address')}<br>${g('f-city')}</div>
+  </div>
+  <div class="inv-party" style="border-color:${clientBorder};background:${clientBg}">
+  <div class="inv-plabel" style="color:${C.p}">Client / Destinataire</div>
+  <div class="inv-pname">${g('c-name')}</div>
+  <div class="inv-pinfo">
+  ${g('c-company')?g('c-company')+'<br>':''}
+  ${g('c-address')}<br>${g('c-city')}
+  </div>
+  </div>
+  </div>
+
+  <table class="inv-table">
+  <thead>
+  <tr style="background:${C.p}">
+  <th style="color:${txtOnP}">Description</th>
+  <th style="color:${txtOnP};text-align:right">Prix unitaire</th>
+  <th style="color:${txtOnP};text-align:right">Quantité</th>
+  <th style="color:${txtOnP};text-align:right">Montant HT</th>
+  </tr>
+  </thead>
+  <tbody>${rows}</tbody>
+  </table>
+
+  <div class="inv-bottom">
+  <div class="inv-notes">
+  <strong>📦 Adresse de livraison :</strong>
+  ${delivery}
+  ${g('f-payment')?'<br><br>'+g('f-payment'):''}
+  ${g('f-notes')?'<br><br>'+g('f-notes'):''}
+  </div>
+  <div class="inv-totals">
+  <div class="inv-trow"><span>Total HT</span><span>${fmt(ht)}</span></div>
+  ${tva>0?`<div class="inv-trow"><span>TVA ${tva}%</span><span>${fmt(tvaAmt)}</span></div>`:''}
+  <div class="inv-ttc" style="background:${C.p};color:${txtOnP}">
+  <span>Total TTC</span><span>${fmt(ttc)}</span>
+  </div>
+  </div>
+  </div>
+
+  <div class="inv-footer">
+  <div>${g('f-siret')?'N° SIRET : '+g('f-siret'):''}</div>
+  <div class="inv-badge">Proforma</div>
+  <div>Généré le ${new Date().toLocaleDateString('fr-FR')}</div>
+  </div>`;
+
+  // Sync top bar
+  document.getElementById('app-header').style.background =
+  `linear-gradient(135deg, ${darken(C.p,.22)} 0%, ${C.p} 60%, ${C.s} 100%)`;
+}
+
+function printIt() {
+  genInvoice();
+
+  // Supprimer l'ancien style d'impression s'il existe
+  const existing = document.getElementById('print-colors');
+  if (existing) existing.remove();
+
+  // Calculer toutes les couleurs dérivées
+  const primary    = C.p;
+  const secondary  = C.s;
+  const dk         = darken(primary, 0.22);
+  const lt         = lighten(primary, 0.18);
+  const txtOnP     = textOn(primary);
+  const clientBg   = lighten(primary, 0.90);
+  const clientBdr  = lighten(primary, 0.55);
+
+  // Injecter un <style media="print"> avec toutes les couleurs réelles
+  const style = document.createElement('style');
+  style.id = 'print-colors';
+  style.media = 'print';
+  style.textContent = `
+    /* Barre dégradée en haut */
+    #invoice-doc::before {
+      background: linear-gradient(90deg, ${dk}, ${lt}, ${secondary}) !important;
+    }
+    /* Nom entreprise + titre facture + labels */
+    .inv-company-name { color: ${primary} !important; }
+    .inv-title        { color: ${primary} !important; }
+    .inv-plabel       { color: ${primary} !important; }
+    /* Tableau header */
+    .inv-table thead tr { background: ${primary} !important; }
+    .inv-table thead th { color: ${txtOnP} !important; }
+    /* Bloc Client (2ème inv-party) */
+    .inv-parties .inv-party:last-child {
+      border-color: ${clientBdr} !important;
+      background: ${clientBg} !important;
+    }
+    /* Total TTC */
+    .inv-ttc {
+      background: ${primary} !important;
+      color: ${txtOnP} !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Attendre 2 frames pour que le DOM soit à jour
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  });
+}
+
+/* =================== LIVE LISTENERS =================== */
+document.querySelectorAll('input:not([type=file]):not([type=color]), textarea, select').forEach(el => {
+    el.addEventListener('input', () => genInvoice());
+});
+document.getElementById('items-list').addEventListener('input', ()=>genInvoice());
+
+/* INIT */
+renderItems();
+genInvoice();
+
+</script>
+</body>
+</html>
